@@ -1,14 +1,22 @@
 import matplotlib.pyplot as plt 
 import numpy as np
+    
+def plotLearning(scores, filename, window=100, figsize=(15, 7)):
+    window = 100
+    average_y_q = []
+    for i in range(len(scores) - window + 1):
+        average_y_q.append(np.mean(scores[i:i+window]))
 
-def plotLearning(scores, filename, x=None, window=5):   
-    N = len(scores)
-    running_avg = np.empty(N)
-    for t in range(N):
-	    running_avg[t] = np.mean(scores[max(0, t-window):(t+1)])
-    if x is None:
-        x = [i for i in range(N)]
-    plt.ylabel('Score')       
-    plt.xlabel('Game')                     
-    plt.plot(x, running_avg)
+        
+    for ind in range(window -1):
+        average_y_q.insert(0, np.nan)
+        
+    plt.figure(figsize=figsize)
+    plt.plot(np.arange(len(scores)), average_y_q, color='blue', label='ddpg')
+    plt.grid()
+    plt.xlabel('Episodes')
+    plt.ylabel(f'Average over {window} episodes')
+    plt.legend()
     plt.savefig(filename)
+    plt.show()
+    plt.close()
