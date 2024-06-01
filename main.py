@@ -34,9 +34,10 @@ def play_multiple_times(agent, env, num_episodes, game, save_freq=25, random_see
         if type.lower() == 'train' and i % save_freq == 0:
             agent.save_models()
 
-            with open(os.path.join(game_dir, 'scores.txt'), 'w') as f:
+            with open(os.path.join(game_dir, 'scores.txt'), 'a') as f:
                 for score in score_history:
                     f.write(str(score) + '\n')
+            score_history = []
         
         if type.lower() == 'train':
             print('episode ', i, 'score %.2f' % score,
@@ -47,14 +48,14 @@ def play_multiple_times(agent, env, num_episodes, game, save_freq=25, random_see
     return score_history
 
 if __name__ == '__main__':
-    game = 'LunarLander-v2'
+    game = 'Humanoid-v4'
     type = 'train'
-    env = gym.make(game, render_mode='human', continuous=True)
-    agent = Agent(alpha=0.000025, beta=0.00025, input_dims=[8], tau=0.001, env=env,
-                  batch_size=64,  layer1_size=400, layer2_size=300, n_actions=4, 
+    env = gym.make(game, render_mode=None)
+    agent = Agent(alpha=0.000025, beta=0.00025, input_dims=[376], tau=0.001, env=env,
+                  batch_size=64,  layer1_size=400, layer2_size=300, n_actions=17, 
                   game=game)
 
-    score_history = play_multiple_times(agent, env, 100, game, save_freq=25, type=type)
+    score_history = play_multiple_times(agent, env, 2500000, game, save_freq=25, type=type)
     if type.lower() == 'train':
         game_dir = os.path.join('models', game)
         filename = game + '-alpha000025-beta00025-400-300.png'
