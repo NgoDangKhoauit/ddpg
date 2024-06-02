@@ -61,14 +61,14 @@ class ReplayBuffer(object):
 
 class CriticNetwork(nn.Module):
     def __init__(self, beta, input_dims, fc1_dims, fc2_dims, n_actions, name,
-                 game_dir=''):
+                 model_path=''):
         super(CriticNetwork, self).__init__()
         
         self.input_dims = input_dims
         self.fc1_dims = fc1_dims
         self.fc2_dims = fc2_dims
         self.n_actions = n_actions
-        self.checkpoint_file = os.path.join(game_dir,name+'_ddpg')
+        self.checkpoint_file = os.path.join(model_path,name+'_ddpg')
         self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
         f1 = 1./np.sqrt(self.fc1.weight.data.size()[0])
         T.nn.init.uniform_(self.fc1.weight.data, -f1, f1)
@@ -122,14 +122,14 @@ class CriticNetwork(nn.Module):
 
 class ActorNetwork(nn.Module):
     def __init__(self, alpha, input_dims, fc1_dims, fc2_dims, n_actions, name,
-                 game_dir=''):
+                 model_path=''):
         super(ActorNetwork, self).__init__()
         
         self.input_dims = input_dims
         self.fc1_dims = fc1_dims
         self.fc2_dims = fc2_dims
         self.n_actions = n_actions
-        self.checkpoint_file = os.path.join(game_dir,name+'_ddpg')
+        self.checkpoint_file = os.path.join(model_path,name+'_ddpg')
         self.fc1 = nn.Linear(*self.input_dims, self.fc1_dims)
         f1 = 1./np.sqrt(self.fc1.weight.data.size()[0])
         T.nn.init.uniform_(self.fc1.weight.data, -f1, f1)
@@ -180,30 +180,27 @@ class ActorNetwork(nn.Module):
         self.load_state_dict(T.load(self.checkpoint_file))
 
 class Agent(object):
-    def __init__(self, alpha, beta, input_dims, tau, env, game='', gamma=0.99,
+    def __init__(self, alpha, beta, input_dims, tau, env, model_path, gamma=0.99,
                  n_actions=2, max_size=1000000, layer1_size=400,
                  layer2_size=300, batch_size=64):
         self.gamma = gamma
         self.tau = tau
         self.memory = ReplayBuffer(max_size, input_dims, n_actions)
         self.batch_size = batch_size
-        
-        game_dir = os.path.join('models', game)
-        os.makedirs(game_dir, exist_ok=True)
 
         self.actor = ActorNetwork(alpha, input_dims, layer1_size,
                                   layer2_size, n_actions=n_actions,
-                                  name='Actor', game_dir=game_dir)
+                                  name='Actor', model_path=model_path)
         self.critic = CriticNetwork(beta, input_dims, layer1_size,
                                     layer2_size, n_actions=n_actions,
-                                    name='Critic', game_dir=game_dir)
+                                    name='Critic', model_path=model_path)
 
         self.target_actor = ActorNetwork(alpha, input_dims, layer1_size,
                                          layer2_size, n_actions=n_actions,
-                                         name='TargetActor', game_dir=game_dir)
+                                         name='TargetActor', model_path=model_path)
         self.target_critic = CriticNetwork(beta, input_dims, layer1_size,
                                            layer2_size, n_actions=n_actions,
-                                           name='TargetCritic', game_dir=game_dir)
+                                           name='TargetCritic', model_path=model_path)
 
         self.noise = OUActionNoise(mu=np.zeros(n_actions))
 
